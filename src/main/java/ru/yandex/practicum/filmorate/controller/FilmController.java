@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
@@ -27,12 +28,12 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) {
         log.info("Добавление фильма {}", film.getName());
         log.trace(film.toString());
         String errMessage;
 
-        if (film.getName() == null || film.getName().isBlank()) {
+        if (film.getName().isBlank()) {
             errMessage = "Название фильма не должно быть пустым";
             log.error(errMessage);
             throw new ConditionsNotMetException(errMessage);

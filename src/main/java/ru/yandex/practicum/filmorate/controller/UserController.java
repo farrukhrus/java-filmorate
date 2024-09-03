@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
@@ -23,12 +24,12 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
+    public User create(@Valid @RequestBody User user) {
         log.info("Создание пользователя с логином {}", user.getLogin());
         log.trace(user.toString());
         String errMessage;
 
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
+        if (user.getLogin().isBlank() || user.getLogin().contains(" ")) {
             errMessage = "Логин не должен быть пустым или содержать пробелы";
             log.error(errMessage);
             throw new ConditionsNotMetException(errMessage);
