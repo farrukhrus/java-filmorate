@@ -59,6 +59,10 @@ public class FilmController {
             Film oldFilm = films.get(newFilm.getId());
             if (newFilm.getReleaseDate().isAfter(EARLIEST_RELEASE_DATE)) {
                 oldFilm.setReleaseDate(newFilm.getReleaseDate());
+            } else {
+                errMessage = "Дата выпуска фильма должна быть не раньше 28 декабря 1895 года";
+                log.error(errMessage);
+                throw new ConditionsNotMetException(errMessage);
             }
             if (newFilm.getDescription() != null && !newFilm.getDescription().isBlank()) {
                 oldFilm.setDescription((newFilm.getDescription()));

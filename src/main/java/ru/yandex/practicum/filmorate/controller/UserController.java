@@ -70,7 +70,7 @@ public class UserController {
             return oldUser;
         }
         log.error("Не найден полльзователь с ID = {}", newUser.getId());
-        throw new NotFoundException("Фильм с id = " + newUser.getId() + " не найден");
+        throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
     }
 
     // вспомогательный метод для генерации идентификатора нового поста
