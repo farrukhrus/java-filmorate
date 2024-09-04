@@ -16,7 +16,6 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequestMapping("/films")
-@NotNull
 public class FilmController {
     private static final LocalDate EARLIEST_RELEASE_DATE = LocalDate.of(1895, Month.DECEMBER, 28);
 

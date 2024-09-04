@@ -15,7 +15,6 @@ import java.util.Map;
 @RestController
 @RequestMapping("/users")
 @Slf4j
-@NotNull
 public class UserController {
     private final Map<Integer, User> users = new HashMap<>();
 
@@ -61,7 +60,7 @@ public class UserController {
             if (newUser.getName() == null || newUser.getName().isBlank()) {
                 oldUser.setName(newUser.getLogin());
             }
-            if (!newUser.getBirthday().isAfter(LocalDate.now())) {
+            if (newUser.getBirthday() != null && !newUser.getBirthday().isAfter(LocalDate.now())) {
                 oldUser.setBirthday(newUser.getBirthday());
             }
             oldUser.setLogin((newUser.getLogin()));
