@@ -79,8 +79,11 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> getFriends(int id) {
+        log.info("Получение списка друзей пользователя c ID = {}", id);
         if (!checkUser(id)) {
-            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+            String errMessage = "Пользователь с id = " + id + " не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         Set<Integer> commonFriendsIds = users.get(id).getFriendsIds();
         return commonFriendsIds.stream().map(users::get).toList();
@@ -88,11 +91,17 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public Collection<User> getCommonFriends(int id, int otherId) {
+        log.info("Получение списка общих друзей пользователей c ID = {} и {}", id, otherId);
+        String errMessage;
         if (!checkUser(id)) {
-            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+            errMessage = "Пользователь с id = " + id + " не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         if (!checkUser(otherId)) {
-            throw new NotFoundException("Пользователь с id = " + otherId + " не найден");
+            errMessage = "Пользователь с id = " + otherId + " не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         Set<Integer> commonFriendsIds = users.get(id).getFriendsIds();
         commonFriendsIds.retainAll(users.get(otherId).getFriendsIds());
@@ -102,14 +111,22 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User addFriend(int id, int userId) {
+        log.info("Добавление в друзья пользователю ID = {} пользователя с ID = {}", id, userId);
+        String errMessage;
         if (!checkUser(userId)) {
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+            errMessage = "Пользователь с id = " + userId + " не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         if (!checkUser(id)) {
-            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+            errMessage = "Пользователь с id = " + id + " не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         if (id == userId) {
-            throw new NotFoundException("Нельзя добавить/удалить самого себя из друзей");
+            errMessage = "Нельзя добавить/удалить самого себя из друзей";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         User userSrc = users.get(id);
         userSrc.addFriend(userId);
@@ -121,14 +138,22 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User removeFriend(int id, int userId) {
+        log.info("Удаление из друзей пользователя ID = {} пользователя с ID = {}", id, userId);
+        String errMessage;
         if (!checkUser(userId)) {
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+            errMessage = "Пользователь с id = " + userId + " не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         if (!checkUser(id)) {
-            throw new NotFoundException("Пользователь с id = " + id + " не найден");
+            errMessage = "Пользователь с id = " + id + " не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         if (id == userId) {
-            throw new NotFoundException("Нельзя добавить/удалить самого себя из друзей");
+            errMessage = "Нельзя добавить/удалить самого себя из друзей";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         User userSrc = users.get(id);
         userSrc.removeFriend(userId);

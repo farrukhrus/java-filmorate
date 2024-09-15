@@ -85,6 +85,8 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getPopular(int count) {
+        log.info("Получение списка самых популярных постов");
+
         Comparator<Film> comparator = Comparator.comparing(Film::getLikes);
         return films.values().stream()
                 .sorted(comparator.reversed())
@@ -94,11 +96,18 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film addLike(int id, int userId) {
+        log.info("Польвателю с ID = {} понравился фильм с ID = {}", id, userId);
+        String errMessage;
+
         if (!checkFilm(id)) {
-            throw new NotFoundException("Фильм с id = " + id + " не найден");
+            errMessage = "Фильм с id = " + id + " не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         if (!us.checkUser(userId)) {
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+            errMessage = "Пользователь с id = " + userId + " не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         Film film = films.get(id);
         film.addLike(userId);
@@ -107,11 +116,17 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film removeLike(int id, int userId) {
+        log.info("Польватель с ID = {} удалил лайк у фильма с ID = {}", id, userId);
+        String errMessage;
         if (!checkFilm(id)) {
-            throw new NotFoundException("Фильм с id = " + id + " не найден");
+            errMessage = "Фильм с id = " + id + " не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         if (!us.checkUser(userId)) {
-            throw new NotFoundException("Пользователь с id = " + userId + " не найден");
+            errMessage = "Пользователь с id = " + userId + " не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         Film film = films.get(id);
         film.removeLike(userId);
