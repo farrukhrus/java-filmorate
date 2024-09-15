@@ -1,88 +1,63 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import java.time.LocalDate;
-import java.time.Month;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
+
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/films")
 public class FilmController {
-    private static final LocalDate EARLIEST_RELEASE_DATE = LocalDate.of(1895, Month.DECEMBER, 28);
-
-    private final Map<Integer, Film> films = new HashMap<>();
+    private final FilmService fs;
 
     @GetMapping
+    @ResponseStatus(HttpStatus.OK)
     public Collection<Film> findAll() {
-        log.info("Получение всего списка фильмов");
-        return films.values();
+        return fs.getAll();
     }
 
     @PostMapping
-    public Film create(@Valid @RequestBody Film film) {
-        log.info("Добавление фильма {}", film.getName());
-        log.trace(film.toString());
-        String errMessage;
-        if (film.getReleaseDate().isBefore(EARLIEST_RELEASE_DATE)) {
-            errMessage = "Дата выпуска фильма должна быть не раньше 28 декабря 1895 года";
-            log.error(errMessage);
-            throw new ConditionsNotMetException(errMessage);
-        }
-        film.setId(getNextId());
-        films.put(film.getId(), film);
-        log.info("Фильм {} успешно создан с ID={}", film.getName(), film.getId());
-        return film;
+    @ResponseStatus(HttpStatus.CREATED)
+    public Film addFilm(@Valid @RequestBody Film film) {
+        return fs.addFilm(film);
     }
 
     @PutMapping
-    public Film update(@RequestBody Film newFilm) {
-        log.info("Обновление фильма с ID={}", newFilm.getId());
-        log.trace(newFilm.toString());
-        String errMessage;
-
-        if (newFilm.getId() == 0) {
-            errMessage = "Id должен быть указан";
-            log.error(errMessage);
-            throw new ConditionsNotMetException(errMessage);
-        }
-        if (films.containsKey(newFilm.getId())) {
-            Film oldFilm = films.get(newFilm.getId());
-            if (newFilm.getReleaseDate().isAfter(EARLIEST_RELEASE_DATE)) {
-                oldFilm.setReleaseDate(newFilm.getReleaseDate());
-            } else {
-                errMessage = "Дата выпуска фильма должна быть не раньше 28 декабря 1895 года";
-                log.error(errMessage);
-                throw new ConditionsNotMetException(errMessage);
-            }
-            if (newFilm.getDescription() != null && !newFilm.getDescription().isBlank()) {
-                oldFilm.setDescription((newFilm.getDescription()));
-            }
-            oldFilm.setDuration(newFilm.getDuration());
-            oldFilm.setName(newFilm.getName());
-            log.info("Фильм с ID={} успешно обновлен", newFilm.getId());
-            return oldFilm;
-        }
-        errMessage = "Фильм с id = " + newFilm.getId() + " не найден";
-        log.error(errMessage);
-        throw new NotFoundException(errMessage);
+    @ResponseStatus(HttpStatus.OK)
+    public Film updateFilm(@RequestBody Film newFilm) {
+        return fs.updateFilm(newFilm);
     }
 
-    // вспомогательный метод для генерации идентификатора нового поста
-    private int getNextId() {
-        int currentMaxId = films.keySet()
-                .stream()
-                .mapToInt(id -> id)
-                .max()
-                .orElse(0);
-        log.trace("Очередной ID фильма: {}", currentMaxId);
-        return ++currentMaxId;
+    @GetMapping("/popular")
+    @ResponseStatus(HttpStatus.OK)
+    public Collection<Film> getPopular(
+            @RequestParam(defaultValue = "10") Integer count
+    ) {
+        return fs.getPopular(count);
+    }
+
+    @PutMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public Film addLike(
+            @PathVariable("id") int id,
+            @PathVariable("userId") int userId
+    ) {
+        return fs.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.OK) // or NO_CONTENT
+    public Film removeLike(
+            @PathVariable("id") int id,
+            @PathVariable("userId") int userId
+    ) {
+        return fs.removeLike(id, userId);
     }
 }
