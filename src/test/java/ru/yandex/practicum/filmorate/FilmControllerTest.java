@@ -10,8 +10,11 @@ import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
+import ru.yandex.practicum.filmorate.service.film.UserService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -24,15 +27,18 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class FilmControllerTest {
 	Film film;
 	Film film2;
+	UserStorage us;
+	UserService use;
 	FilmController fc;
 	FilmStorage fst;
 	FilmService fs;
 
 	@BeforeEach
 	public void beforeEach() {
+		us = new InMemoryUserStorage();
 		film = new Film();
 		film2 = new Film();
-		fst = new InMemoryFilmStorage();
+		fst = new InMemoryFilmStorage(us);
 		fs = new FilmService(fst);
 		fc = new FilmController(fs);
 
