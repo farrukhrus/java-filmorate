@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
@@ -16,12 +15,11 @@ import java.util.Collection;
 @RequiredArgsConstructor
 @Slf4j
 public class UserController {
-    @Autowired
     private final UserService us;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Collection<User> findAll() {
+    public Collection<User> getAll() {
         return us.getAll();
     }
 
@@ -39,36 +37,25 @@ public class UserController {
 
     @GetMapping("/{id}/friends")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<User> getFriends(
-            @PathVariable("id") int id
-    ) {
+    public Collection<User> getFriends(@PathVariable("id") int id) {
         return us.getFriends(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<User> getCommonFriends(
-            @PathVariable("id") int id,
-            @PathVariable("otherId") int otherId
-    ) {
+    public Collection<User> getCommonFriends(@PathVariable("id") int id, @PathVariable("otherId") int otherId) {
         return us.getCommonFriends(id, otherId);
     }
 
     @PutMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
-    public User addFriend(
-            @PathVariable("id") int id,
-            @PathVariable("friendId") int userId
-    ) {
+    public User addFriend(@PathVariable("id") int id, @PathVariable("friendId") int userId) {
         return us.addFriend(id, userId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK) // or NO_CONTENT
-    public User removeFriend(
-            @PathVariable("id") int id,
-            @PathVariable("friendId") int userId
-    ) {
+    public User removeFriend(@PathVariable("id") int id, @PathVariable("friendId") int userId) {
         return us.removeFriend(id, userId);
     }
 }

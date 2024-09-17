@@ -19,7 +19,7 @@ public class FilmController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Collection<Film> findAll() {
+    public Collection<Film> getAll() {
         return fs.getAll();
     }
 
@@ -37,27 +37,19 @@ public class FilmController {
 
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
-    public Collection<Film> getPopular(
-            @RequestParam(defaultValue = "10") Integer count
-    ) {
+    public Collection<Film> getPopular(@RequestParam(defaultValue = "10") Integer count) {
         return fs.getPopular(count);
     }
 
     @PutMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public Film addLike(
-            @PathVariable("id") int id,
-            @PathVariable("userId") int userId
-    ) {
+    public Film addLike(@PathVariable("id") int id, @PathVariable("userId") int userId) {
         return fs.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK) // or NO_CONTENT
-    public Film removeLike(
-            @PathVariable("id") int id,
-            @PathVariable("userId") int userId
-    ) {
+    public Film removeLike(@PathVariable("id") int id, @PathVariable("userId") int userId) {
         return fs.removeLike(id, userId);
     }
 }

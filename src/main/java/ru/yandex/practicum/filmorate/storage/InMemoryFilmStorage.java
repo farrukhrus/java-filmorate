@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.film.UserService;
 
 import java.time.LocalDate;
 import java.time.Month;
@@ -17,14 +18,14 @@ import java.util.*;
 public class InMemoryFilmStorage implements FilmStorage {
     private static final LocalDate EARLIEST_RELEASE_DATE = LocalDate.of(1895, Month.DECEMBER, 28);
     private final Map<Integer, Film> films = new HashMap<>();
-    private final UserStorage us;
+    private final UserService us;
 
     @Override
     public Film addFilm(Film film) {
         log.info("Добавление фильма {}", film.getName());
         log.trace(film.toString());
         String errMessage;
-        if (film.getReleaseDate().isBefore(EARLIEST_RELEASE_DATE)) {
+        if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(EARLIEST_RELEASE_DATE)) {
             errMessage = "Дата выпуска фильма должна быть не раньше 28 декабря 1895 года";
             log.error(errMessage);
             throw new ConditionsNotMetException(errMessage);
@@ -37,11 +38,13 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public Film getFilm(int id) {
-        return null;
+        log.info("Получение фильма по ID {}", id);
+        return films.get(id);
     }
 
     @Override
     public Collection<Film> getAll() {
+        log.info("Получение всего списка фильмов");
         return films.values();
     }
 
@@ -58,7 +61,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         if (films.containsKey(film.getId())) {
             Film oldFilm = films.get(film.getId());
-            if (film.getReleaseDate().isAfter(EARLIEST_RELEASE_DATE)) {
+            if (film.getReleaseDate() != null && film.getReleaseDate().isAfter(EARLIEST_RELEASE_DATE)) {
                 oldFilm.setReleaseDate(film.getReleaseDate());
             } else {
                 errMessage = "Дата выпуска фильма должна быть не раньше 28 декабря 1895 года";
@@ -68,10 +71,10 @@ public class InMemoryFilmStorage implements FilmStorage {
             if (film.getDescription() != null && !film.getDescription().isBlank()) {
                 oldFilm.setDescription((film.getDescription()));
             }
-            if (film.getDescription() != null) {
+            if (film.getDuration() >= 0) {
                 oldFilm.setDuration(film.getDuration());
             }
-            if (film.getName() != null) {
+            if (film.getName() != null && !film.getName().isBlank()) {
                 oldFilm.setName(film.getName());
             }
 
@@ -133,7 +136,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
-    public boolean checkFilm(int id) {
+    private boolean checkFilm(int id) {
         return films.containsKey(id);
     }
 

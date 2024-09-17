@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service.film;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -11,7 +10,6 @@ import java.util.Collection;
 @Service
 @RequiredArgsConstructor
 public class UserService {
-    @Autowired
     private final UserStorage us;
 
     public User addUser(User film) {
@@ -40,5 +38,9 @@ public class UserService {
 
     public User removeFriend(int id, int userId) {
         return us.removeFriend(id, userId);
+    }
+
+    public boolean checkUser(int id) {
+        return us.checkUser(id);
     }
 }

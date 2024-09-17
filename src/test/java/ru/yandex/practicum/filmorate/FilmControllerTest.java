@@ -36,9 +36,10 @@ public class FilmControllerTest {
 	@BeforeEach
 	public void beforeEach() {
 		us = new InMemoryUserStorage();
+		use = new UserService(us);
 		film = new Film();
 		film2 = new Film();
-		fst = new InMemoryFilmStorage(us);
+		fst = new InMemoryFilmStorage(use);
 		fs = new FilmService(fst);
 		fc = new FilmController(fs);
 
