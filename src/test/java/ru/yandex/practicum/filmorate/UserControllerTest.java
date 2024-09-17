@@ -8,6 +8,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.exception.*;
+import ru.yandex.practicum.filmorate.service.film.UserService;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
+
 import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,13 +20,17 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserControllerTest {
+    private UserStorage us;
+    private UserService use;
     private UserController uc;
     User user1;
     User user2;
 
     @BeforeEach
     public void beforeEach() {
-        uc = new UserController();
+        us = new InMemoryUserStorage();
+        use = new UserService(us);
+        uc = new UserController(use);
         user1 = new User();
         user2 = new User();
 
@@ -30,7 +38,7 @@ public class UserControllerTest {
         user1.setLogin("test");
         user1.setName("Test");
         user1.setBirthday(LocalDate.of(1991, 1, 16));
-        uc.create(user1);
+        uc.addUser(user1);
     }
 
     @Test
@@ -44,7 +52,7 @@ public class UserControllerTest {
     public void testNegativeIdOnUpdate() {
         user2.setId(-1);
         NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            uc.update(user2);
+            uc.updateUser(user2);
         });
         assertEquals("Пользователь с id = -1 не найден", exception.getMessage(),
                 "ID фильма не найден");
@@ -54,7 +62,7 @@ public class UserControllerTest {
     @DisplayName("Если имя пользователя равно NULL, то сделать равным значению поля логин")
     public void testCreateUserWithoutName() {
         user2.setLogin("test2");
-        uc.create(user2);
+        uc.addUser(user2);
         assertEquals(user2.getLogin(), user2.getName(), "Логин == Имя");
     }
 }
