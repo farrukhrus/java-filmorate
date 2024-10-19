@@ -1,0 +1,4 @@
+logging.level:
+  root: WARN
+  ru.yandex.practicum.filmorate: INFO
+  org.zalando.logbook: TRACE

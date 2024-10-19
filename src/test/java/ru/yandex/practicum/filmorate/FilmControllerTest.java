@@ -9,6 +9,13 @@ import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.film.FilmService;
+import ru.yandex.practicum.filmorate.service.film.UserService;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
+
 import java.time.LocalDate;
 import java.time.Month;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,19 +27,27 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class FilmControllerTest {
 	Film film;
 	Film film2;
+	UserStorage us;
+	UserService use;
 	FilmController fc;
+	FilmStorage fst;
+	FilmService fs;
 
 	@BeforeEach
 	public void beforeEach() {
+		us = new InMemoryUserStorage();
+		use = new UserService(us);
 		film = new Film();
 		film2 = new Film();
-		fc = new FilmController();
+		fst = new InMemoryFilmStorage(use);
+		fs = new FilmService(fst);
+		fc = new FilmController(fs);
 
 		film.setName("С легким паром");
 		film.setDescription("Про баню и веники");
 		film.setReleaseDate(LocalDate.of(1991, 01, 16));
 		film.setDuration(100);
-		fc.create(film);
+		fc.addFilm(film);
 	}
 
 	@Test
@@ -46,7 +61,7 @@ public class FilmControllerTest {
 	public void testNegativeIdOnUpdate() {
 		film2.setId(-1);
 		Exception exception = assertThrows(NotFoundException.class, () -> {
-			fc.update(film2);
+			fc.updateFilm(film2);
 		});
 		assertEquals("Фильм с id = -1 не найден", exception.getMessage(), "ID фильма не найден");
 	}
@@ -58,7 +73,7 @@ public class FilmControllerTest {
 		film2.setId(film.getId());
 		film2.setReleaseDate(LocalDate.of(1815, Month.DECEMBER, 28));
 		Exception exception = assertThrows(ConditionsNotMetException.class, () -> {
-			fc.update(film2);
+			fc.updateFilm(film2);
 		});
 		assertEquals("Дата выпуска фильма должна быть не раньше 28 декабря 1895 года",
 				exception.getMessage(), "Дата выпуска не обновилась");
