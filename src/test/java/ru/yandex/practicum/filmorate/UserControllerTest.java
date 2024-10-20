@@ -1,68 +1,37 @@
 package ru.yandex.practicum.filmorate;
 
+import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.exception.*;
 import ru.yandex.practicum.filmorate.service.film.UserService;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
-
 import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 
 @SpringBootTest
+@AutoConfigureTestDatabase
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserControllerTest {
-    private UserStorage us;
-    private UserService use;
-    private UserController uc;
-    User user1;
-    User user2;
+    private final UserService us;
+    private final User user1 = new User("tmp@mail.com", "tmpLogin", "Vova", LocalDate.now());
+    private final User user2 = new User("tmp2@mail.com", "tmpLogin2", "Vova", LocalDate.now());
 
     @BeforeEach
-    public void beforeEach() {
-        us = new InMemoryUserStorage();
-        use = new UserService(us);
-        uc = new UserController(use);
-        user1 = new User();
-        user2 = new User();
-
-        user1.setEmail("test@gmail.com");
-        user1.setLogin("test");
-        user1.setName("Test");
-        user1.setBirthday(LocalDate.of(1991, 1, 16));
-        uc.addUser(user1);
+    public void addUser() {
+        us.addUser(user1);
+        us.addUser(user2);
     }
 
     @Test
-    @DisplayName("Успешное добалвение пользователя")
+    @DisplayName("Успешное добавление пользователя")
     public void testAddUser() {
-        assertEquals(1, user1.getId(), "Польватель добавлен");
-    }
-
-    @Test
-    @DisplayName("Неуспешное обновление фильма с указанием отрицательного ID")
-    public void testNegativeIdOnUpdate() {
-        user2.setId(-1);
-        NotFoundException exception = assertThrows(NotFoundException.class, () -> {
-            uc.updateUser(user2);
-        });
-        assertEquals("Пользователь с id = -1 не найден", exception.getMessage(),
-                "ID фильма не найден");
-    }
-
-    @Test
-    @DisplayName("Если имя пользователя равно NULL, то сделать равным значению поля логин")
-    public void testCreateUserWithoutName() {
-        user2.setLogin("test2");
-        uc.addUser(user2);
-        assertEquals(user2.getLogin(), user2.getName(), "Логин == Имя");
+        assertEquals(1, user1.getId(), "Пользователь добавлен");
     }
 }

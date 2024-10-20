@@ -35,6 +35,11 @@ public class FilmController {
         return fs.updateFilm(newFilm);
     }
 
+    @GetMapping("/{id}")
+    public Film getFilm(@PathVariable int id) {
+        return fs.getFilm(id);
+    }
+
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
     public Collection<Film> getPopular(@RequestParam(defaultValue = "10") Integer count) {
