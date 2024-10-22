@@ -5,9 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -28,7 +26,6 @@ public class Film {
     @NotNull
     private MPA mpa;
     private Set<Genre> genres = new LinkedHashSet<>();
-    private final Set<Integer> likes = new HashSet<>();
 
     public Film(String name, String description, LocalDate releaseDate,
                 int duration, MPA mpa, Set<Genre> genres) {
@@ -38,17 +35,5 @@ public class Film {
         this.duration = duration;
         this.mpa = mpa;
         this.genres = genres;
-    }
-
-    public int getLikes() {
-        return likes.size();
-    }
-
-    public void addLike(int userId) {
-        likes.add(userId);
-    }
-
-    public void removeLike(int userId) {
-        likes.remove(userId);
     }
 }

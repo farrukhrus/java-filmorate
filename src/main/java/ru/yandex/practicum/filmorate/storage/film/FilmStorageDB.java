@@ -1,17 +1,15 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.MPA;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.Month;
@@ -21,9 +19,12 @@ import java.util.Objects;
 
 @Primary
 @Repository
+@Slf4j
 @RequiredArgsConstructor
 public class FilmStorageDB implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final FilmMapper mapper;
+    String errMessage;
 
     private static final LocalDate EARLIEST_RELEASE_DATE = LocalDate.of(1895, Month.DECEMBER, 28);
     private static final String FIND_BY_ID = "SELECT f.*, m.name AS mpa_name FROM films f " +
@@ -43,12 +44,14 @@ public class FilmStorageDB implements FilmStorage {
 
     @Override
     public List<Film> getAll() {
-        return jdbcTemplate.query(FIND_ALL, FilmStorageDB::mapper);
+        log.info("Получение всего списка фильмов");
+        return jdbcTemplate.query(FIND_ALL, mapper);
     }
 
     @Override
     public Collection<Film> getPopular(int count) {
-        List<Film> films = jdbcTemplate.query(GET_POPULAR, FilmStorageDB::mapper, count);
+        log.info("Получение списка самых популярных постов");
+        List<Film> films = jdbcTemplate.query(GET_POPULAR, mapper, count);
         if (films.isEmpty()) {
             return List.of();
         }
@@ -67,10 +70,13 @@ public class FilmStorageDB implements FilmStorage {
 
     @Override
     public Film addFilm(Film film) {
+        log.info("Добавление фильма {}", film.getName());
+        log.trace(film.toString());
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
         if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(EARLIEST_RELEASE_DATE)) {
-            String errMessage = "Дата выпуска фильма должна быть не раньше 28 декабря 1895 года";
+            errMessage = "Дата выпуска фильма должна быть не раньше 28 декабря 1895 года";
+            log.error(errMessage);
             throw new ConditionsNotMetException(errMessage);
         }
 
@@ -87,13 +93,17 @@ public class FilmStorageDB implements FilmStorage {
 
         Integer id = Objects.requireNonNull(keyHolder.getKey()).intValue();
         film.setId(id);
+        log.info("Фильм {} успешно создан с ID={}", film.getName(), film.getId());
         return film;
     }
 
     @Override
     public Film updateFilm(Film newFilm) {
+        log.info("Обновление фильма с ID={}", newFilm.getId());
+        log.trace(newFilm.toString());
         if (newFilm.getReleaseDate() == null || newFilm.getReleaseDate().isBefore(EARLIEST_RELEASE_DATE)) {
-            String errMessage = "Дата выпуска фильма должна быть не раньше 28 декабря 1895 года";
+            errMessage = "Дата выпуска фильма должна быть не раньше 28 декабря 1895 года";
+            log.error(errMessage);
             throw new ConditionsNotMetException(errMessage);
         }
 
@@ -105,22 +115,13 @@ public class FilmStorageDB implements FilmStorage {
                 newFilm.getMpa().getId(),
                 newFilm.getId()
         );
+        log.info("Фильм с ID={} успешно обновлен", newFilm.getId());
         return newFilm;
     }
 
     @Override
     public Film getFilm(Integer id) {
-        return jdbcTemplate.queryForObject(FIND_BY_ID, FilmStorageDB::mapper, id);
-    }
-
-    public static Film mapper(ResultSet rs, int rowNum) throws SQLException {
-        return Film.builder()
-                .id(rs.getInt("id"))
-                .name(rs.getString("name"))
-                .description(rs.getString("description"))
-                .releaseDate(rs.getDate("release_date").toLocalDate())
-                .duration(rs.getInt("duration"))
-                .mpa(new MPA(rs.getLong("mpa_id"), rs.getString("mpa_name")))
-                .build();
+        log.info("Получение фильма по ID {}", id);
+        return jdbcTemplate.queryForObject(FIND_BY_ID, mapper, id);
     }
 }

@@ -16,12 +16,11 @@ import java.time.LocalDate;
 import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class FilmControllerTest {
+public class FilmServiceTest {
 	private final FilmService fs;
 	private final Film film1 = new Film("Test1",
 			"description1",

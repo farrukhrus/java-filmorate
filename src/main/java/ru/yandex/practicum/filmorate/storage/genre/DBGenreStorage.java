@@ -1,24 +1,21 @@
-package ru.yandex.practicum.filmorate.storage.db;
+package ru.yandex.practicum.filmorate.storage.genre;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-@Component("dbGenreStorage")
+@Repository
 @RequiredArgsConstructor
 public class DBGenreStorage implements GenreStorage {
     private final JdbcTemplate jdbcTemplate;
-
+    private final GenreMapper mapper;
     private static final String FIND_BY_ID = "SELECT * FROM genres WHERE ID = ?";
     private static final String FIND_ALL = "SELECT * FROM genres";
     private static final String FIND_BY_FILM = "SELECT * FROM genres g " +
@@ -29,7 +26,7 @@ public class DBGenreStorage implements GenreStorage {
 
     @Override
     public Genre getGenreById(Long genreId) {
-        List<Genre> result = jdbcTemplate.query(FIND_BY_ID, this::mapper, genreId);
+        List<Genre> result = jdbcTemplate.query(FIND_BY_ID, mapper, genreId);
         if (result.isEmpty()) {
             throw new NotFoundException("Genre with id " + genreId + " not found");
         }
@@ -47,30 +44,22 @@ public class DBGenreStorage implements GenreStorage {
         String in = String.join(",", Collections.nCopies(ids.size(), "?"));
         return (ArrayList<Genre>) jdbcTemplate.query(
                 String.format(FIND_GENRES_BY_IDS, in),
-                this::mapper,
+                mapper,
                 ids.toArray()
         );
     }
 
+    @Override
     public List<Genre> getGenresByFilm(Film film) {
-        return jdbcTemplate.query(FIND_BY_FILM, this::mapper, film.getId());
+        return jdbcTemplate.query(FIND_BY_FILM, mapper, film.getId());
     }
 
     @Override
     public List<Genre> getAll() {
-        List<Genre> result = jdbcTemplate.query(FIND_ALL, this::mapper);
-
+        List<Genre> result = jdbcTemplate.query(FIND_ALL, mapper);
         if (result.isEmpty()) {
             return null;
         }
-
         return result;
-    }
-
-    private Genre mapper(ResultSet resultSet, int rowNum) throws SQLException {
-        return Genre.builder()
-                .id(resultSet.getLong("id"))
-                .name(resultSet.getString("name"))
-                .build();
     }
 }

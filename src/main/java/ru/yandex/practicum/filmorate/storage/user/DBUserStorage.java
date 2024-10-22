@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Primary;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -12,15 +13,19 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 @Primary
+@Slf4j
 @Component("dbUserStorage")
 @RequiredArgsConstructor
 public class DBUserStorage implements UserStorage {
+    private final FriendMapper friendMapper;
+    private final UserMapper userMapper;
+
     private final JdbcTemplate jdbcTemplate;
+    String errMessage;
+
     private static final String SELECT_BY_ID_QUERY = "SELECT * FROM users WHERE ID = ?";
     private static final String SELECT_USERS_BY_IDS_QUERY = "SELECT * FROM users WHERE ID IN (?)";
     private static final String SELECT_USERS_QUERY = "SELECT * FROM users";
@@ -35,8 +40,10 @@ public class DBUserStorage implements UserStorage {
 
     @Override
     public User addUser(User user) {
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        log.info("Создание пользователя с логином {}", user.getLogin());
+        log.trace(user.toString());
 
+        KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(INSERT_USER_QUERY, new String[]{"ID"});
 
@@ -48,13 +55,19 @@ public class DBUserStorage implements UserStorage {
             return ps;
         }, keyHolder);
         user.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
+        log.info("Пользователь с логином {} успешно создан с ID={}", user.getLogin(), user.getId());
         return user;
     }
 
     @Override
     public User updateUser(User user) {
+        log.info("Обновление пользователя {}", user.getId());
+        log.trace(user.toString());
+
         if (getUser(user.getId()) == null) {
-            throw new NotFoundException("Пользователь не найден");
+            errMessage = "Id должен быть указан";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
 
         jdbcTemplate.update(connection -> {
@@ -67,22 +80,28 @@ public class DBUserStorage implements UserStorage {
             ps.setLong(5, user.getId());
             return ps;
         });
+        log.info("Пользователь с ID={} успешно обновлен", user.getId());
         return user;
     }
 
     @Override
     public User getUser(int userId) {
-        List<User> result = jdbcTemplate.query(SELECT_BY_ID_QUERY, this::userMapper, userId);
+        log.info("Получение пользователя по ID {}", userId);
+        List<User> result = jdbcTemplate.query(SELECT_BY_ID_QUERY, userMapper, userId);
         if (result.isEmpty()) {
-            throw new NotFoundException("Пользователь не найден");
+            errMessage = "Пользователь не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         return result.getFirst();
     }
 
     @Override
     public List<User> getAll() {
-        List<User> result = jdbcTemplate.query(SELECT_USERS_QUERY, this::userMapper);
+        log.info("Получение всего списка пользователей");
+        List<User> result = jdbcTemplate.query(SELECT_USERS_QUERY, userMapper);
         if (result.isEmpty()) {
+            log.error("Не найдено ни одного пользователя");
             return null;
         }
         return result;
@@ -90,8 +109,11 @@ public class DBUserStorage implements UserStorage {
 
     @Override
     public User addFriend(int user, int friend) {
+        log.info("Добавление в друзья пользователю ID = {} пользователя с ID = {}", user, friend);
         if (getUser(user) == null || getUser(friend) == null) {
-            throw new NotFoundException("Пользователь не найден");
+            errMessage = "Пользователь не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         jdbcTemplate.update(ADD_FRIEND_QUERY, user, friend);
         return getUser(user);
@@ -99,8 +121,11 @@ public class DBUserStorage implements UserStorage {
 
     @Override
     public User removeFriend(int user, int friend) {
+        log.info("Удаление из друзей пользователя ID = {} пользователя с ID = {}", user, friend);
         if (getUser(user) == null || getUser(friend) == null) {
-            throw new NotFoundException("Пользователь не найден");
+            errMessage = "Пользователь не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
         jdbcTemplate.update(REMOVE_FRIEND_QUERY, user, friend);
         return getUser(user);
@@ -113,13 +138,15 @@ public class DBUserStorage implements UserStorage {
 
     @Override
     public ArrayList<User> getFriends(int user) {
-        List<Friend> result = jdbcTemplate.query(GET_FRIENDS_QUERY, this::friendMapper, user);
+        log.info("Получение списка друзей пользователя c ID = {}", user);
+        List<Friend> result = jdbcTemplate.query(GET_FRIENDS_QUERY, friendMapper, user);
+        List<String> ids = new ArrayList<>();
 
         if (result.isEmpty()) {
-            throw new NotFoundException("Пользователь не найден");
+            errMessage = "Пользователь с id = " + user + " не найден";
+            log.error(errMessage);
+            throw new NotFoundException(errMessage);
         }
-
-        List<String> ids = new ArrayList<>();
 
         for (Friend friend : result) {
             ids.add(String.valueOf(friend.getFriend()));
@@ -129,17 +156,19 @@ public class DBUserStorage implements UserStorage {
 
         return (ArrayList<User>) jdbcTemplate.query(
                 String.format(IN_QUERY, inSql),
-                this::userMapper,
+                userMapper,
                 ids.toArray()
         );
     }
 
     @Override
     public ArrayList<User> getCommonFriends(int user, int friend) {
-        List<Friend> friendsList1 = jdbcTemplate.query(GET_FRIENDS_QUERY, this::friendMapper, user);
-        List<Friend> friendsList2 = jdbcTemplate.query(GET_FRIENDS_QUERY, this::friendMapper, friend);
+        log.info("Получение списка общих друзей пользователей c ID = {} и {}", user, friend);
 
+        List<Friend> friendsList1 = jdbcTemplate.query(GET_FRIENDS_QUERY, friendMapper, user);
+        List<Friend> friendsList2 = jdbcTemplate.query(GET_FRIENDS_QUERY, friendMapper, friend);
         ArrayList<Friend> friendsList = new ArrayList<>();
+        StringBuilder friendsIds = new StringBuilder();
 
         for (Friend friendItem : friendsList1) {
             int id = friendItem.getFriend();
@@ -153,31 +182,10 @@ public class DBUserStorage implements UserStorage {
             }
         }
 
-        StringBuilder friendsIds = new StringBuilder();
-
         for (Friend item : friendsList) {
             friendsIds.append(item.getFriend()).append(",");
         }
-
         friendsIds = new StringBuilder(friendsIds.substring(0, friendsIds.length() - 1));
-
-        return (ArrayList<User>) jdbcTemplate.query(SELECT_USERS_BY_IDS_QUERY, this::userMapper, friendsIds.toString());
-    }
-
-    private User userMapper(ResultSet resultSet, int rowNum) throws SQLException {
-        return User.builder()
-                .id(resultSet.getInt("ID"))
-                .email(resultSet.getString("EMAIL"))
-                .login(resultSet.getString("LOGIN"))
-                .name(resultSet.getString("NAME"))
-                .birthday(resultSet.getDate("BIRTHDAY").toLocalDate())
-                .build();
-    }
-
-    private Friend friendMapper(ResultSet resultSet, int rowNum) throws SQLException {
-        return Friend.builder()
-                .userId(resultSet.getInt("user_id"))
-                .friend(resultSet.getInt("friend_id"))
-                .build();
+        return (ArrayList<User>) jdbcTemplate.query(SELECT_USERS_BY_IDS_QUERY, userMapper, friendsIds.toString());
     }
 }

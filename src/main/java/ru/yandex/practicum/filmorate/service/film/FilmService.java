@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.filmgenre.FilmGenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
@@ -23,12 +23,9 @@ public class FilmService {
 
     public Film addFilm(Film film) {
         MPA mpa = ms.getMpaById(film.getMpa().getId());
-        if (mpa == null) {
-            throw new ValidationException("MPA с id = " + film.getMpa().getId() + " не найден");
-        }
-
         List<Genre> genres;
-        if (film.getGenres() != null) {
+
+        if (!film.getGenres().isEmpty()) {
             genres = gs.getGenres(film);
 
             if (genres.size() != film.getGenres().size()) {
@@ -48,12 +45,9 @@ public class FilmService {
 
     public Film updateFilm(Film film) {
         MPA mpa = ms.getMpaById(film.getMpa().getId());
-        if (mpa == null) {
-            throw new ValidationException("MPA с id = " + film.getMpa().getId() + " не найден");
-        }
-
         List<Genre> genres;
-        if (film.getGenres() != null) {
+
+        if (!film.getGenres().isEmpty()) {
             genres = gs.getGenres(film);
 
             if (genres.size() != film.getGenres().size()) {

@@ -17,6 +17,7 @@
 	<properties>
 		<java.version>21</java.version>
 		<logbook.version>3.7.2</logbook.version>
+		<h2.version>2.1.210</h2.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -54,7 +55,7 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>2.1.210</version>
+			<version>${h2.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 	</dependencies>

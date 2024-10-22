@@ -15,6 +15,8 @@ create table if not exists users
     birthday date not null,
     email varchar(255) not null
 );
+create unique index if not exists USER_EMAIL_INDEX on USERS (email);
+create unique index if not exists USER_LOGIN_INDEX on USERS (login);
 
 create table if not exists genres
 (

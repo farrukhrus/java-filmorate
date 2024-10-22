@@ -13,12 +13,11 @@ import ru.yandex.practicum.filmorate.service.film.UserService;
 import java.time.LocalDate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-
 @SpringBootTest
 @AutoConfigureTestDatabase
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class UserControllerTest {
+public class UserServiceTest {
     private final UserService us;
     private final User user1 = new User("tmp@mail.com", "tmpLogin", "Vova", LocalDate.now());
     private final User user2 = new User("tmp2@mail.com", "tmpLogin2", "Vova", LocalDate.now());
