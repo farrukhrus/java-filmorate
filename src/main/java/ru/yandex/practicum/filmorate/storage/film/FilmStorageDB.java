@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.PreparedStatement;
@@ -40,7 +41,8 @@ public class FilmStorageDB implements FilmStorage {
             "FROM likes l GROUP BY film_id " +
             "ORDER BY rn DESC LIMIT ?" +
             ") as subfilms ON f.ID = subfilms.film_id LEFT JOIN mpa m ON f.mpa_id = m.id ORDER BY subfilms.rn DESC";
-
+    private static final String ADD_LIKE = "INSERT INTO likes (FILM_ID, USER_ID) VALUES (?, ?)";
+    private static final String DELETE_LIKE = "DELETE from likes WHERE FILM_ID = ? AND USER_ID = ?";
 
     @Override
     public List<Film> getAll() {
@@ -59,13 +61,19 @@ public class FilmStorageDB implements FilmStorage {
     }
 
     @Override
-    public Film addLike(int id, int userId) {
-        return null;
+    public void addLike(int id, int userId) {
+        jdbcTemplate.update(connection -> {
+            PreparedStatement ps = connection
+                    .prepareStatement(ADD_LIKE);
+            ps.setObject(1, id);
+            ps.setObject(2, userId);
+            return ps;
+        });
     }
 
     @Override
-    public Film removeLike(int id, int userId) {
-        return null;
+    public void removeLike(int id, int userId) {
+        jdbcTemplate.update(DELETE_LIKE, id, userId);
     }
 
     @Override
@@ -101,6 +109,13 @@ public class FilmStorageDB implements FilmStorage {
     public Film updateFilm(Film newFilm) {
         log.info("Обновление фильма с ID={}", newFilm.getId());
         log.trace(newFilm.toString());
+
+        if (getFilm(newFilm.getId()) == null) {
+            errMessage = "Фильм не найден " + newFilm.getId();
+            log.info(errMessage);
+            throw new NotFoundException(errMessage);
+        }
+
         if (newFilm.getReleaseDate() == null || newFilm.getReleaseDate().isBefore(EARLIEST_RELEASE_DATE)) {
             errMessage = "Дата выпуска фильма должна быть не раньше 28 декабря 1895 года";
             log.error(errMessage);
@@ -122,6 +137,10 @@ public class FilmStorageDB implements FilmStorage {
     @Override
     public Film getFilm(Integer id) {
         log.info("Получение фильма по ID {}", id);
-        return jdbcTemplate.queryForObject(FIND_BY_ID, mapper, id);
+        List<Film> film = jdbcTemplate.query(FIND_BY_ID, mapper, id);
+        if (film.isEmpty()) {
+            return null;
+        }
+        return film.getFirst();
     }
 }

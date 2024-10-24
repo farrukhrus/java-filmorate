@@ -86,11 +86,11 @@ public class FilmService {
         return fs.getPopular(count);
     }
 
-    public Film addLike(int id, int userId) {
-        return fs.addLike(id, userId);
+    public void addLike(int id, int userId) {
+        fs.addLike(id, userId);
     }
 
-    public Film removeLike(int id, int userId) {
-        return fs.removeLike(id, userId);
+    public void removeLike(int id, int userId) {
+        fs.removeLike(id, userId);
     }
 }

@@ -39,7 +39,7 @@ public class DBUserStorage implements UserStorage {
     private static final String IN_QUERY = "SELECT * FROM users WHERE ID IN (%s)";
 
     @Override
-    public User addUser(User user) {
+    public void addUser(User user) {
         log.info("Создание пользователя с логином {}", user.getLogin());
         log.trace(user.toString());
 
@@ -56,11 +56,10 @@ public class DBUserStorage implements UserStorage {
         }, keyHolder);
         user.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
         log.info("Пользователь с логином {} успешно создан с ID={}", user.getLogin(), user.getId());
-        return user;
     }
 
     @Override
-    public User updateUser(User user) {
+    public void updateUser(User user) {
         log.info("Обновление пользователя {}", user.getId());
         log.trace(user.toString());
 
@@ -81,7 +80,6 @@ public class DBUserStorage implements UserStorage {
             return ps;
         });
         log.info("Пользователь с ID={} успешно обновлен", user.getId());
-        return user;
     }
 
     @Override
@@ -108,7 +106,7 @@ public class DBUserStorage implements UserStorage {
     }
 
     @Override
-    public User addFriend(int user, int friend) {
+    public void addFriend(int user, int friend) {
         log.info("Добавление в друзья пользователю ID = {} пользователя с ID = {}", user, friend);
         if (getUser(user) == null || getUser(friend) == null) {
             errMessage = "Пользователь не найден";
@@ -116,11 +114,10 @@ public class DBUserStorage implements UserStorage {
             throw new NotFoundException(errMessage);
         }
         jdbcTemplate.update(ADD_FRIEND_QUERY, user, friend);
-        return getUser(user);
     }
 
     @Override
-    public User removeFriend(int user, int friend) {
+    public void removeFriend(int user, int friend) {
         log.info("Удаление из друзей пользователя ID = {} пользователя с ID = {}", user, friend);
         if (getUser(user) == null || getUser(friend) == null) {
             errMessage = "Пользователь не найден";
@@ -128,7 +125,6 @@ public class DBUserStorage implements UserStorage {
             throw new NotFoundException(errMessage);
         }
         jdbcTemplate.update(REMOVE_FRIEND_QUERY, user, friend);
-        return getUser(user);
     }
 
     @Override
@@ -139,13 +135,18 @@ public class DBUserStorage implements UserStorage {
     @Override
     public ArrayList<User> getFriends(int user) {
         log.info("Получение списка друзей пользователя c ID = {}", user);
+
+        if (getUser(user) == null) {
+            throw new NotFoundException(errMessage);
+        }
+
         List<Friend> result = jdbcTemplate.query(GET_FRIENDS_QUERY, friendMapper, user);
         List<String> ids = new ArrayList<>();
 
         if (result.isEmpty()) {
             errMessage = "Пользователь с id = " + user + " не найден";
             log.error(errMessage);
-            throw new NotFoundException(errMessage);
+            return new ArrayList();
         }
 
         for (Friend friend : result) {
