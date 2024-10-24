@@ -35,6 +35,11 @@ public class FilmController {
         return fs.updateFilm(newFilm);
     }
 
+    @GetMapping("/{id}")
+    public Film getFilm(@PathVariable int id) {
+        return fs.getFilm(id);
+    }
+
     @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
     public Collection<Film> getPopular(@RequestParam(defaultValue = "10") Integer count) {
@@ -43,13 +48,13 @@ public class FilmController {
 
     @PutMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public Film addLike(@PathVariable("id") int id, @PathVariable("userId") int userId) {
-        return fs.addLike(id, userId);
+    public void addLike(@PathVariable("id") int id, @PathVariable("userId") int userId) {
+        fs.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK) // or NO_CONTENT
-    public Film removeLike(@PathVariable("id") int id, @PathVariable("userId") int userId) {
-        return fs.removeLike(id, userId);
+    public void removeLike(@PathVariable("id") int id, @PathVariable("userId") int userId) {
+        fs.removeLike(id, userId);
     }
 }

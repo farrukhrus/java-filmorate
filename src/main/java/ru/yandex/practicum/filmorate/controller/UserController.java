@@ -26,13 +26,15 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User addUser(@Valid @RequestBody User user) {
-        return us.addUser(user);
+        us.addUser(user);
+        return user;
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public User updateUser(@RequestBody User user) {
-        return us.updateUser(user);
+        us.updateUser(user);
+        return user;
     }
 
     @GetMapping("/{id}/friends")
@@ -49,13 +51,13 @@ public class UserController {
 
     @PutMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
-    public User addFriend(@PathVariable("id") int id, @PathVariable("friendId") int userId) {
-        return us.addFriend(id, userId);
+    public void addFriend(@PathVariable("id") Integer id, @PathVariable("friendId") Integer userId) {
+        us.addFriend(id, userId);
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK) // or NO_CONTENT
-    public User removeFriend(@PathVariable("id") int id, @PathVariable("friendId") int userId) {
-        return us.removeFriend(id, userId);
+    public void removeFriend(@PathVariable("id") Integer id, @PathVariable("friendId") Integer userId) {
+        us.removeFriend(id, userId);
     }
 }
