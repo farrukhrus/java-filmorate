@@ -19,13 +19,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class UserServiceTest {
     private final UserService us;
-    private final User user1 = new User("tmp@mail.com", "tmpLogin", "Vova", LocalDate.now());
-    private final User user2 = new User("tmp2@mail.com", "tmpLogin2", "Vova", LocalDate.now());
+    private User user1;
 
     @BeforeEach
     public void addUser() {
+        user1 = new User("tmp@mail.com", "tmpLogin", "Vova", LocalDate.now());
         us.addUser(user1);
-        us.addUser(user2);
     }
 
     @Test

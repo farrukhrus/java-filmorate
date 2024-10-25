@@ -166,19 +166,19 @@ public class DBUserStorage implements UserStorage {
     public ArrayList<User> getCommonFriends(int user, int friend) {
         log.info("Получение списка общих друзей пользователей c ID = {} и {}", user, friend);
 
-        List<Friend> friendsList1 = jdbcTemplate.query(GET_FRIENDS_QUERY, friendMapper, user);
-        List<Friend> friendsList2 = jdbcTemplate.query(GET_FRIENDS_QUERY, friendMapper, friend);
+        List<Friend> usersFriends = jdbcTemplate.query(GET_FRIENDS_QUERY, friendMapper, user);
+        List<Friend> friendsFriends = jdbcTemplate.query(GET_FRIENDS_QUERY, friendMapper, friend);
         ArrayList<Friend> friendsList = new ArrayList<>();
         StringBuilder friendsIds = new StringBuilder();
 
-        for (Friend friendItem : friendsList1) {
+        for (Friend friendItem : usersFriends) {
             int id = friendItem.getFriend();
             Friend containFriend = Friend.builder()
                     .userId(friend)
                     .friend(id)
                     .build();
 
-            if (friendsList2.contains(containFriend)) {
+            if (friendsFriends.contains(containFriend)) {
                 friendsList.add(friendItem);
             }
         }

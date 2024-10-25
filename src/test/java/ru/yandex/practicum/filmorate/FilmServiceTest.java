@@ -22,24 +22,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class FilmServiceTest {
 	private final FilmService fs;
-	private final Film film1 = new Film("Test1",
-			"description1",
-			LocalDate.now(),
-			100,
-			new MPA(1L, null),
-			Set.of(new Genre(1L, null))
-	);
-
-	private final Film film2 = new Film("Test2",
-			"description2",
-			LocalDate.now(),
-			100,
-			new MPA(1L, null),
-			Set.of(new Genre(1L, null))
-	);
+	private Film film1;
+	private Film film2;
 
 	@BeforeEach
 	public void beforeEach() {
+		film1 = new Film("Test1",
+				"description1",
+				LocalDate.now(),
+				100,
+				new MPA(1L, null),
+				Set.of(new Genre(1L, null))
+		);
+
 		fs.addFilm(film1);
 	}
 

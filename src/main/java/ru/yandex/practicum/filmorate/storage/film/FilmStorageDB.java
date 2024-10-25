@@ -25,7 +25,7 @@ import java.util.Objects;
 public class FilmStorageDB implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final FilmMapper mapper;
-    String errMessage;
+    private String errMessage;
 
     private static final LocalDate EARLIEST_RELEASE_DATE = LocalDate.of(1895, Month.DECEMBER, 28);
     private static final String FIND_BY_ID = "SELECT f.*, m.name AS mpa_name FROM films f " +
