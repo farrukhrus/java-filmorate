@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.service.film;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 
@@ -12,12 +12,12 @@ import java.util.Collection;
 public class UserService {
     private final UserStorage us;
 
-    public User addUser(User film) {
-        return us.addUser(film);
+    public void addUser(User film) {
+        us.addUser(film);
     }
 
-    public User updateUser(User film) {
-        return us.updateUser(film);
+    public void updateUser(User film) {
+        us.updateUser(film);
     }
 
     public Collection<User> getAll() {
@@ -32,12 +32,12 @@ public class UserService {
         return us.getCommonFriends(id, otherId);
     }
 
-    public User addFriend(int id, int userId) {
-        return us.addFriend(id, userId);
+    public void addFriend(int id, int userId) {
+        us.addFriend(id, userId);
     }
 
-    public User removeFriend(int id, int userId) {
-        return us.removeFriend(id, userId);
+    public void removeFriend(int id, int userId) {
+        us.removeFriend(id, userId);
     }
 
     public boolean checkUser(int id) {
